@@ -91,7 +91,8 @@ colnames(dataWithoutNAsum) <- c("date", "steps")
 
 
 ```r
-hist(dataWithoutNAsum$steps, breaks = 20, xlab = "number of steps", main = "total number of steps each day")
+library(ggplot2)
+print(ggplot(dataWithoutNAsum, aes(steps)) + ggtitle("total number of steps each day") + geom_histogram(binwidth = 1000))
 ```
 
 ![plot of chunk unnamed-chunk-10](./PA1_template_files/figure-html/unnamed-chunk-10.png) 
@@ -147,7 +148,7 @@ summary(zeroCount$count)
 ##     173     195     204     208     214     286
 ```
 
-We can see that most of the time the person in study was not *moving*.
+We can see that most of the time the subject of the study was not *moving*.
 
 ## What is the average daily activity pattern?
 
@@ -176,12 +177,12 @@ dailyData$time <- strptime(sprintf("%.4d", dailyData$interval), format = '%H%M')
 We can plot the results:
 
 ```r
-plot(dailyData$time, dailyData$steps, type = "l", xlab = "time", ylab = "average steps", main = "average steps during the day")
+print(ggplot(dailyData, aes(x = time, y = steps))+ ggtitle("number steps in average during one day") + geom_line())
 ```
 
 ![plot of chunk unnamed-chunk-16](./PA1_template_files/figure-html/unnamed-chunk-16.png) 
 
-We can see several pics during the day, and a very flat graph during the night (which is not surprising). 
+We can see several picks during the day, and a very flat graph during the night (which is not surprising). 
 The maximum of the graph can be computed by:
 
 ```r
@@ -234,7 +235,7 @@ colnames(dataSum) <- c("date", "steps")
 
 
 ```r
-hist(dataSum$steps, breaks = 20, xlab = "number of steps", main = "total number of steps each day")
+print(ggplot(dataSum, aes(steps))+ ggtitle("total number of steps each day") + geom_histogram(binwidth = 1000))
 ```
 
 ![plot of chunk unnamed-chunk-22](./PA1_template_files/figure-html/unnamed-chunk-22.png) 
@@ -301,14 +302,10 @@ Create a new column with a time variable:
 dailyDataWeekend$time <- strptime(sprintf("%.4d", dailyDataWeekend$interval), format = '%H%M')
 ```
 
-Now we can do both plots. Weekends:
+Now we can do both plots:
 
 ```r
-weekendData <- subset(dailyDataWeekend, dailyDataWeekend$weekend == "weekend")
-weekdayData <- subset(dailyDataWeekend, dailyDataWeekend$weekend == "weekday")
-plot(weekdayData$time, weekdayData$steps, col = "black", type = "l", xlab = "time", ylab = "average steps", main = "average steps during the day")
-lines(weekendData$time, weekendData$steps, col = "red")
-legend("topleft", bty = "n", legend = c("weekday", "weekend"), lty=1,  col = c("black", "red"))
+print(ggplot(dailyDataWeekend, aes(x = time, y = steps, group = weekend)) + ggtitle("number steps in average during one day") + facet_wrap(~weekend, ncol = 1) + geom_line())
 ```
 
 ![plot of chunk unnamed-chunk-28](./PA1_template_files/figure-html/unnamed-chunk-28.png) 
@@ -346,34 +343,10 @@ Now we can do two plots. If it is weekend:
 
 
 ```r
-saturdayData <- subset(dailyDataWeekday, dailyDataWeekday$weekday == "Saturday")
-sundayData <- subset(dailyDataWeekday, dailyDataWeekday$weekday == "Sunday")
-plot(saturdayData$time, saturdayData$steps, type = "l", xlab = "time", ylab = "average steps", main = "average steps during the day: weekend")
-lines(sundayData$time, sundayData$steps, col = "red")
-legend("topleft", bty = "n", legend = c("saturday", "sunday"), lty=1,  col = c("black", "red"))
+print(ggplot(dailyDataWeekday, aes(x = time, y = steps, group = weekday)) + ggtitle("number steps in average during one day") + facet_wrap(~weekday, ncol = 2) + geom_line())
 ```
 
 ![plot of chunk unnamed-chunk-31](./PA1_template_files/figure-html/unnamed-chunk-31.png) 
-
-
-Weekdays:
-
-
-```r
-mondayData <- subset(dailyDataWeekday, dailyDataWeekday$weekday == "Monday")
-tuesdayData <- subset(dailyDataWeekday, dailyDataWeekday$weekday == "Tuesday")
-wednesdayData <- subset(dailyDataWeekday, dailyDataWeekday$weekday == "Wednesday")
-thursdayData <- subset(dailyDataWeekday, dailyDataWeekday$weekday == "Thursday")
-fridayData <- subset(dailyDataWeekday, dailyDataWeekday$weekday == "Friday")
-plot(fridayData$time, fridayData$steps, col = "black", type = "l", xlab = "time", ylab = "average steps", main = "average steps during the day: weekdays")
-lines(mondayData$time, mondayData$steps, col = "red")
-lines(tuesdayData$time, tuesdayData$steps, col = "green")
-lines(wednesdayData$time, wednesdayData$steps, col = "blue")
-lines(thursdayData$time, thursdayData$steps, col = "yellow")
-legend("topleft", bty = "n", legend = c("monday", "tuesday", "wednesday", "thursday", "friday"), lty=1,  col = c("red", "green", "blue", "yellow", "black"))
-```
-
-![plot of chunk unnamed-chunk-32](./PA1_template_files/figure-html/unnamed-chunk-32.png) 
 
 The results are not completely regular, we can see that saturday and sunday are quite different.
 Also that monday, tuesday and wednesday there is a secondary pick before 8 am.
@@ -381,7 +354,7 @@ Also that monday, tuesday and wednesday there is a secondary pick before 8 am.
 
 ## Final remarks
 
-This work was done offline, and I did not have ggplot2 installed (because of an update). Also, on the one hand we do not know the subject which will be important to understand the picks, on the other hand it will be interesting to have the same data for some large group of people.
+Also, on the one hand we do not know the subject which will be important to understand the picks, on the other hand it will be interesting to have the same data for some large group of people.
 
 Also, in order to be a reasonable research work we would need to compute the standart deviation corresponding to each average taken.
 
