@@ -1,102 +1,150 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
-```{r setoption, echo=FALSE}
-library(knitr)
-opts_chunk$set(echo = TRUE)
-```
+
 
 This document is written in english, therefore set R to english:
-```{r}
+
+```r
 Sys.setlocale("LC_TIME", "en_US")
+```
+
+```
+## [1] "en_US"
 ```
 
 ## Loading and preprocessing the data
 
 We start by unzipping an loading the data:
-```{r}
+
+```r
 unzip("activity.zip")
 data <- read.csv("activity.csv")
 ```
 
 We create a new column with a date-time value. Also, we transform the column date to be a proper date column:
-```{r}
+
+```r
 data$time <- strptime(sprintf("%s %.4d", data$date, data$interval), format = '%Y-%m-%d %H%M' )
 data$date <- strftime(data$date, format = '%Y-%m-%d')
 ```
 
 We check the result:
-```{r}
+
+```r
 str(data)
 ```
 
+```
+## 'data.frame':	17568 obs. of  4 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : chr  "2012-10-01" "2012-10-01" "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+##  $ time    : POSIXlt, format: "2012-10-01 00:00:00" "2012-10-01 00:05:00" ...
+```
+
 In a first step we rather ignore missing values, as we can see there are several missing values in the variable *steps*:
-```{r}
+
+```r
 missingValues <- is.na(data$steps)
 missingValuesAmount <- sum(missingValues)
 ```
-which corresponds to `r 100*missingValuesAmount/length(data[[1]])`% of the measurements.
+which corresponds to 13.1148% of the measurements.
 
 On the other hand, all dates exists as we can see by the absence of **NA**s on the variable *time*:
-```{r}
+
+```r
 sum(is.na(data$time))
+```
+
+```
+## [1] 0
 ```
 
 ## What is mean total number of steps taken per day?
 
 Let us get the subset of well formed data (without **NA**s):
-```{r}
+
+```r
 dataWithoutNA <- data[!missingValues,]
 ```
 
 Check it:
-```{r}
+
+```r
 str(dataWithoutNA)
 ```
 
+```
+## 'data.frame':	15264 obs. of  4 variables:
+##  $ steps   : int  0 0 0 0 0 0 0 0 0 0 ...
+##  $ date    : chr  "2012-10-02" "2012-10-02" "2012-10-02" "2012-10-02" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+##  $ time    : POSIXlt, format: "2012-10-02 00:00:00" "2012-10-02 00:05:00" ...
+```
+
 Compute the sum:
-```{r}
+
+```r
 dataWithoutNAsum <- aggregate(dataWithoutNA$steps, list(dataWithoutNA$date), sum)
 colnames(dataWithoutNAsum) <- c("date", "steps")
 ```
 
-```{r}
+
+```r
 hist(dataWithoutNAsum$steps, breaks = 20, xlab = "number of steps", main = "total number of steps each day")
 ```
 
-```{r}
+![plot of chunk unnamed-chunk-10](./PA1_template_files/figure-html/unnamed-chunk-10.png) 
+
+
+```r
 dataWithoutNAmean <- mean(dataWithoutNAsum$steps)
 dataWithoutNAmedian <- median(dataWithoutNAsum$steps)
 ```
-Which corresponds to a average of `r dataWithoutNAmean` and a median of `r dataWithoutNAmedian`.
+Which corresponds to a average of 1.0766 &times; 10<sup>4</sup> and a median of 10765.
 Notice that the average and the median are surprisingly close to each other.
 This means that the left tail is similar to the right tail.
 
 ### Distribution of the missing values
 
-Notice that during a day there are $24 \times 60 / 5$ intervals, *i.e.* `r 24*60/5` intervals. Let us count the numbers of missing values per day:
+Notice that during a day there are $24 \times 60 / 5$ intervals, *i.e.* 288 intervals. Let us count the numbers of missing values per day:
 
-```{r}
+
+```r
 missingValuesPerDay <- aggregate(missingValues, list(data$date), sum)
 colnames(missingValuesPerDay) <- c("date", "steps")
 subset(missingValuesPerDay, missingValuesPerDay$steps != 0)
 ```
 
-So we conclude that it is all or nothing, *i.e.* we have `r 0` or `r 24*60/5` measurements per day. We can find no pattern at all on the missing days.
+```
+##          date steps
+## 1  2012-10-01   288
+## 8  2012-10-08   288
+## 32 2012-11-01   288
+## 35 2012-11-04   288
+## 40 2012-11-09   288
+## 41 2012-11-10   288
+## 45 2012-11-14   288
+## 61 2012-11-30   288
+```
+
+So we conclude that it is all or nothing, *i.e.* we have 0 or 288 measurements per day. We can find no pattern at all on the missing days.
 
 ### Distributions of zeros
 
 Let us digress a little bit about the intervals without any step:
 
-```{r}
+
+```r
 zeroLocation <- (dataWithoutNA$steps == 0)
 zeroCount <- aggregate(zeroLocation, list(dataWithoutNA$date), sum)
 colnames(zeroCount) <- c("date", "count")
 summary(zeroCount$count)
+```
+
+```
+##    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+##     173     195     204     208     214     286
 ```
 
 We can see that most of the time the person in study was not *moving*.
@@ -106,69 +154,97 @@ We can see that most of the time the person in study was not *moving*.
 Perhaps more interesting is to study if there is some daily pattern.
 For that purpose let us aggregate the results per time:
 
-```{r}
+
+```r
 dailyData <- aggregate(dataWithoutNA$steps, list(dataWithoutNA$interval), mean)
 colnames(dailyData) <- c("interval", "steps")
 str(dailyData)
 ```
 
+```
+## 'data.frame':	288 obs. of  2 variables:
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+##  $ steps   : num  1.717 0.3396 0.1321 0.1509 0.0755 ...
+```
+
 Create a new column with a time variable:
-```{r}
+
+```r
 dailyData$time <- strptime(sprintf("%.4d", dailyData$interval), format = '%H%M')
 ```
 
 We can plot the results:
-```{r}
+
+```r
 plot(dailyData$time, dailyData$steps, type = "l", xlab = "time", ylab = "average steps", main = "average steps during the day")
 ```
 
+![plot of chunk unnamed-chunk-16](./PA1_template_files/figure-html/unnamed-chunk-16.png) 
+
 We can see several pics during the day, and a very flat graph during the night (which is not surprising). 
 The maximum of the graph can be computed by:
-```{r}
+
+```r
 max <- max(dailyData$steps)
 maxTime <- dailyData[dailyData$steps == max, "time"]
 ```
-*I.e.* the maximum is reached at `r format(maxTime, "%H:%M")` and its value is `r max` steps.
+*I.e.* the maximum is reached at 08:35 and its value is 206.1698 steps.
 
 ## Imputing missing values
 
-As we saw there are exacly `r sum(missingValuesPerDay$steps != 0)` days without data, which corresponds to `r 100*missingValuesAmount/length(data[[1]])`% of the time. The fact that there are whole days missing implies that we have no information at all about those days.
+As we saw there are exacly 8 days without data, which corresponds to 13.1148% of the time. The fact that there are whole days missing implies that we have no information at all about those days.
 
 In order to fill the gaps, we adopt the strategy: **replace missing data at time t by the average steps at time t in other days**.
 
 We get the data wich is missing, *i.e.* only dates and times:
-```{r}
+
+```r
 dataNA <- subset(data, select = c("date", "interval", "time"), missingValues)
 ```
 
 And replace **NA** values by the mean:
-```{r}
+
+```r
 replacedData <- merge(dataNA, subset(dailyData, select = c("steps", "interval")))
 wholeData <- rbind(replacedData, dataWithoutNA)
 ```
 
 And check the result:
-```{r}
+
+```r
 str(wholeData)
+```
+
+```
+## 'data.frame':	17568 obs. of  4 variables:
+##  $ interval: int  0 0 0 0 0 0 0 0 5 5 ...
+##  $ date    : chr  "2012-10-01" "2012-11-30" "2012-11-04" "2012-11-09" ...
+##  $ time    : POSIXlt, format: "2012-10-01 00:00:00" "2012-11-30 00:00:00" ...
+##  $ steps   : num  1.72 1.72 1.72 1.72 1.72 ...
 ```
 
 ### Steps per day
 
 Compute the sum:
-```{r}
+
+```r
 dataSum <- aggregate(wholeData$steps, list(wholeData$date), sum)
 colnames(dataSum) <- c("date", "steps")
 ```
 
-```{r}
+
+```r
 hist(dataSum$steps, breaks = 20, xlab = "number of steps", main = "total number of steps each day")
 ```
 
-```{r}
+![plot of chunk unnamed-chunk-22](./PA1_template_files/figure-html/unnamed-chunk-22.png) 
+
+
+```r
 dataMean <- mean(dataSum$steps)
 dataMedian <- median(dataSum$steps)
 ```
-Which corresponds to a average of `r dataMean` and a median of `r dataMedian`.
+Which corresponds to a average of 1.0766 &times; 10<sup>4</sup> and a median of 1.0766 &times; 10<sup>4</sup>.
 
 Of course, the fact that we are adding an some *average* days, it rises the center bar, keeping all the others at the same level.
 In fact, the way we are inputing simulated data *erases* the differences which is not what we want.
@@ -177,40 +253,65 @@ For this reason, in what follows we will not use this simulated data.
 ## Are there differences in activity patterns between weekdays and weekends?
 
 Let us add two new columns with the week day and a boolean variable indicating if it is weekend or not:
-```{r}
+
+```r
 dataWithoutNA$weekday <- factor(weekdays(dataWithoutNA$time))
 dataWithoutNA$weekend <- factor(ifelse (dataWithoutNA$weekday == "Sunday" | dataWithoutNA$weekday == "Saturday", "weekend", "weekday"))
 ```
 
 Check the results:
-```{r}
+
+```r
 summary(subset(dataWithoutNA, select = c("weekday", "weekend")))
+```
+
+```
+##       weekday        weekend     
+##  Friday   :2016   weekday:11232  
+##  Monday   :2016   weekend: 4032  
+##  Saturday :2016                  
+##  Sunday   :2016                  
+##  Thursday :2304                  
+##  Tuesday  :2592                  
+##  Wednesday:2304
 ```
 
 ### The results depoending if it is weekend
 
 We start by averaging per time of the day, but splitting in two cases: weekday and weekend:
 
-```{r}
+
+```r
 dailyDataWeekend <- aggregate(dataWithoutNA$steps, list(dataWithoutNA$interval, dataWithoutNA$weekend), mean)
 colnames(dailyDataWeekend) <- c("interval", "weekend", "steps")
 str(dailyDataWeekend)
 ```
 
+```
+## 'data.frame':	576 obs. of  3 variables:
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+##  $ weekend : Factor w/ 2 levels "weekday","weekend": 1 1 1 1 1 1 1 1 1 1 ...
+##  $ steps   : num  2.333 0.462 0.179 0.205 0.103 ...
+```
+
 
 Create a new column with a time variable:
-```{r}
+
+```r
 dailyDataWeekend$time <- strptime(sprintf("%.4d", dailyDataWeekend$interval), format = '%H%M')
 ```
 
 Now we can do both plots. Weekends:
-```{r}
+
+```r
 weekendData <- subset(dailyDataWeekend, dailyDataWeekend$weekend == "weekend")
 weekdayData <- subset(dailyDataWeekend, dailyDataWeekend$weekend == "weekday")
 plot(weekdayData$time, weekdayData$steps, col = "black", type = "l", xlab = "time", ylab = "average steps", main = "average steps during the day")
 lines(weekendData$time, weekendData$steps, col = "red")
 legend("topleft", bty = "n", legend = c("weekday", "weekend"), lty=1,  col = c("black", "red"))
 ```
+
+![plot of chunk unnamed-chunk-28](./PA1_template_files/figure-html/unnamed-chunk-28.png) 
 
 Notice that at the weekend the steps start later on the day and they are more spread during the day. This compare to the big pick in the morning during the weekdays.
 
@@ -220,21 +321,31 @@ Even if it is not asked, we can not avoid the question is there any difference b
 
 Let us average the number of steps per time of the day splitting according to the day:
 
-```{r}
+
+```r
 dailyDataWeekday <- aggregate(dataWithoutNA$steps, list(dataWithoutNA$interval, dataWithoutNA$weekday), mean)
 colnames(dailyDataWeekday) <- c("interval", "weekday", "steps")
 str(dailyDataWeekday)
 ```
 
+```
+## 'data.frame':	2016 obs. of  3 variables:
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+##  $ weekday : Factor w/ 7 levels "Friday","Monday",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ steps   : num  0 0 0 0 0 0 0 0 0 0 ...
+```
+
 
 Create a new column with a time variable:
-```{r}
+
+```r
 dailyDataWeekday$time <- strptime(sprintf("%.4d", dailyDataWeekday$interval), format = '%H%M')
 ```
 
 Now we can do two plots. If it is weekend:
 
-```{r}
+
+```r
 saturdayData <- subset(dailyDataWeekday, dailyDataWeekday$weekday == "Saturday")
 sundayData <- subset(dailyDataWeekday, dailyDataWeekday$weekday == "Sunday")
 plot(saturdayData$time, saturdayData$steps, type = "l", xlab = "time", ylab = "average steps", main = "average steps during the day: weekend")
@@ -242,10 +353,13 @@ lines(sundayData$time, sundayData$steps, col = "red")
 legend("topleft", bty = "n", legend = c("saturday", "sunday"), lty=1,  col = c("black", "red"))
 ```
 
+![plot of chunk unnamed-chunk-31](./PA1_template_files/figure-html/unnamed-chunk-31.png) 
+
 
 Weekdays:
 
-```{r}
+
+```r
 mondayData <- subset(dailyDataWeekday, dailyDataWeekday$weekday == "Monday")
 tuesdayData <- subset(dailyDataWeekday, dailyDataWeekday$weekday == "Tuesday")
 wednesdayData <- subset(dailyDataWeekday, dailyDataWeekday$weekday == "Wednesday")
@@ -258,6 +372,8 @@ lines(wednesdayData$time, wednesdayData$steps, col = "blue")
 lines(thursdayData$time, thursdayData$steps, col = "yellow")
 legend("topleft", bty = "n", legend = c("monday", "tuesday", "wednesday", "thursday", "friday"), lty=1,  col = c("red", "green", "blue", "yellow", "black"))
 ```
+
+![plot of chunk unnamed-chunk-32](./PA1_template_files/figure-html/unnamed-chunk-32.png) 
 
 The results are not completely regular, we can see that saturday and sunday are quite different.
 Also that monday, tuesday and wednesday there is a secondary pick before 8 am.
