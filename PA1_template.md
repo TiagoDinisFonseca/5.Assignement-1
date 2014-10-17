@@ -2,7 +2,7 @@
 
 
 
-This document is written in english, therefore set R to english:
+This document is written in english, therefore we set R to english:
 
 ```r
 Sys.setlocale("LC_TIME", "en_US")
@@ -92,7 +92,7 @@ colnames(dataWithoutNAsum) <- c("date", "steps")
 
 ```r
 library(ggplot2)
-print(ggplot(dataWithoutNAsum, aes(steps)) + ggtitle("total number of steps each day") + geom_histogram(binwidth = 1000))
+print(ggplot(dataWithoutNAsum, aes(steps)) + ggtitle("total number of steps each day") + geom_histogram(binwidth = 1000, colour = "black", fill = "red"))
 ```
 
 ![plot of chunk unnamed-chunk-10](./PA1_template_files/figure-html/unnamed-chunk-10.png) 
@@ -235,7 +235,7 @@ colnames(dataSum) <- c("date", "steps")
 
 
 ```r
-print(ggplot(dataSum, aes(steps))+ ggtitle("total number of steps each day") + geom_histogram(binwidth = 1000))
+print(ggplot(dataSum, aes(steps))+ ggtitle("total number of steps each day") + geom_histogram(binwidth = 1000, colour = "black", fill = "red"))
 ```
 
 ![plot of chunk unnamed-chunk-22](./PA1_template_files/figure-html/unnamed-chunk-22.png) 

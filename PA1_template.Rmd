@@ -10,7 +10,7 @@ library(knitr)
 opts_chunk$set(echo = TRUE)
 ```
 
-This document is written in english, therefore set R to english:
+This document is written in english, therefore we set R to english:
 ```{r}
 Sys.setlocale("LC_TIME", "en_US")
 ```
@@ -66,7 +66,7 @@ colnames(dataWithoutNAsum) <- c("date", "steps")
 
 ```{r}
 library(ggplot2)
-print(ggplot(dataWithoutNAsum, aes(steps)) + ggtitle("total number of steps each day") + geom_histogram(binwidth = 1000))
+print(ggplot(dataWithoutNAsum, aes(steps)) + ggtitle("total number of steps each day") + geom_histogram(binwidth = 1000, colour = "black", fill = "red"))
 ```
 
 ```{r}
@@ -162,7 +162,7 @@ colnames(dataSum) <- c("date", "steps")
 ```
 
 ```{r}
-print(ggplot(dataSum, aes(steps))+ ggtitle("total number of steps each day") + geom_histogram(binwidth = 1000))
+print(ggplot(dataSum, aes(steps))+ ggtitle("total number of steps each day") + geom_histogram(binwidth = 1000, colour = "black", fill = "red"))
 ```
 
 ```{r}
